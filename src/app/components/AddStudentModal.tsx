@@ -25,12 +25,12 @@ export default function AddStudentModal({
           <XMarkIcon className="h-6 w-6" />
         </button>
         
-        <h2 className="text-xl font-bold mb-4 dark:text-white">Añadir Estudiante</h2>
+        <h2 className="text-xl font-bold mb-4 dark:text-white">Add Student</h2>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Nombre completo"
+          placeholder="Full name"
           className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         />
         <div className="flex justify-end gap-3 mt-4">
@@ -38,13 +38,13 @@ export default function AddStudentModal({
             onClick={onClose}
             className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             onClick={() => { onAdd(name); setName(''); }}
             className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors"
           >
-            Añadir
+            Add
           </button>
         </div>
       </div>

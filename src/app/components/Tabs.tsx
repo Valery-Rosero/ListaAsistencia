@@ -8,9 +8,9 @@ export default function Tabs({
   setActiveTab: (tab: string) => void;
 }) {
   const tabs = [
-    { name: 'Estudiantes', icon: '👨‍🎓' },
-    { name: 'Asistencias', icon: '📅' },
-    { name: 'Reportes', icon: '📊' }
+    { name: 'Students', icon: '👨‍🎓' },
+    { name: 'Attendance', icon: '📅' },
+    { name: 'Reports', icon: '📊' }
   ];
 
   return (

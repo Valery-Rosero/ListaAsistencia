@@ -1,24 +1,24 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { obtenerMaterias, guardarMaterias } from './utils/storage';
-import { Materia } from './utils/types';
+import { getSubjects, saveSubjects } from './utils/storage';
+import { Subject } from './utils/types';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { PlusIcon, TrashIcon, ArrowRightIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
-  const [materias, setMaterias] = useState<Materia[]>([]);
-  const [nuevaMateria, setNuevaMateria] = useState('');
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [newSubject, setNewSubject] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Cargar modo oscuro desde localStorage
+    // Load dark mode from localStorage
     const savedMode = localStorage.getItem('darkMode') === 'true';
     setIsDarkMode(savedMode);
     document.documentElement.classList.toggle('dark', savedMode);
 
-    // Cargar materias
-    setMaterias(obtenerMaterias());
+    // Load subjects
+    setSubjects(getSubjects());
   }, []);
 
   const toggleDarkMode = () => {
@@ -28,31 +28,31 @@ export default function Home() {
     document.documentElement.classList.toggle('dark', newMode);
   };
 
-  const agregarMateria = () => {
-    if (!nuevaMateria.trim()) {
-      toast.error('El nombre de la materia no puede estar vacío');
+  const addSubject = () => {
+    if (!newSubject.trim()) {
+      toast.error('Subject name cannot be empty');
       return;
     }
 
-    const nueva: Materia = {
+    const subject: Subject = {
       id: Date.now().toString(),
-      nombre: nuevaMateria.trim(),
-      estudiantes: [],
-      asistencias: [],
+      name: newSubject.trim(),
+      students: [],
+      attendances: [],
     };
 
-    const updated = [...materias, nueva];
-    setMaterias(updated);
-    guardarMaterias(updated);
-    setNuevaMateria('');
-    toast.success(`Materia "${nuevaMateria.trim()}" creada`);
+    const updated = [...subjects, subject];
+    setSubjects(updated);
+    saveSubjects(updated);
+    setNewSubject('');
+    toast.success(`Subject "${newSubject.trim()}" created`);
   };
 
-  const eliminarMateria = (id: string) => {
-    const updated = materias.filter((m) => m.id !== id);
-    setMaterias(updated);
-    guardarMaterias(updated);
-    toast.success('Materia eliminada');
+  const deleteSubject = (id: string) => {
+    const updated = subjects.filter((s) => s.id !== id);
+    setSubjects(updated);
+    saveSubjects(updated);
+    toast.success('Subject deleted');
   };
 
   return (
@@ -61,13 +61,13 @@ export default function Home() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
-            Gestión de Asistencias
+            Attendance Management
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Administra tus materias y registros
+            Manage your subjects and records
           </p>
         </div>
-        
+
         <button
           onClick={toggleDarkMode}
           className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-yellow-300"
@@ -76,44 +76,44 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Formulario para añadir materia */}
+      {/* Add subject form */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8 transition-all duration-200">
         <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-          Añadir Nueva Materia
+          Add New Subject
         </h2>
         <div className="flex gap-2">
           <input
             type="text"
-            value={nuevaMateria}
-            onChange={(e) => setNuevaMateria(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && agregarMateria()}
-            placeholder="Nombre de la materia"
+            value={newSubject}
+            onChange={(e) => setNewSubject(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addSubject()}
+            placeholder="Subject name"
             className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           />
           <button
-            onClick={agregarMateria}
+            onClick={addSubject}
             className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors"
           >
             <PlusIcon className="h-5 w-5" />
-            <span className="hidden md:inline">Añadir</span>
+            <span className="hidden md:inline">Add</span>
           </button>
         </div>
       </div>
 
-      {/* Listado de materias */}
+      {/* Subject list */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {materias.map((materia) => (
+        {subjects.map((subject) => (
           <div 
-            key={materia.id} 
+            key={subject.id} 
             className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200 overflow-hidden"
           >
             <div className="p-6">
               <div className="flex justify-between items-start">
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                  {materia.nombre}
+                  {subject.name}
                 </h2>
                 <button
-                  onClick={() => eliminarMateria(materia.id)}
+                  onClick={() => deleteSubject(subject.id)}
                   className="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-1 rounded-full"
                 >
                   <TrashIcon className="h-5 w-5" />
@@ -122,24 +122,24 @@ export default function Home() {
               
               <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-4">
                 <div className="mr-4">
-                  <span className="font-medium">{materia.estudiantes.length}</span> estudiantes
+                  <span className="font-medium">{subject.students.length}</span> students
                 </div>
                 <div>
                   <span className="font-medium">
-                    {materia.asistencias.filter(a => a.presente).length}
-                  </span> asistencias
+                    {subject.attendances.filter(a => a.present).length}
+                  </span> attendances
                 </div>
               </div>
 
               <div className="flex gap-2 mt-4">
                 <Link
-                  href={`/materia/${materia.id}`}
+                  href={`/subject/${subject.id}`}
                   className="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm transition-colors"
                 >
                   <ArrowRightIcon className="h-4 w-4" />
-                  Entrar
+                  Enter
                 </Link>
-                
+
                 <button className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg">
                   <ChartBarIcon className="h-4 w-4" />
                 </button>
@@ -150,7 +150,7 @@ export default function Home() {
       </div>
 
       {/* Empty state */}
-      {materias.length === 0 && (
+      {subjects.length === 0 && (
         <div className="text-center py-12">
           <div className="mx-auto w-24 h-24 text-gray-400 dark:text-gray-500 mb-4">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,10 +158,10 @@ export default function Home() {
             </svg>
           </div>
           <h3 className="text-lg font-medium text-gray-500 dark:text-gray-400">
-            No hay materias registradas
+            No subjects registered
           </h3>
           <p className="text-gray-400 dark:text-gray-500 mt-1">
-            Comienza añadiendo tu primera materia
+            Start by adding your first subject
           </p>
         </div>
       )}

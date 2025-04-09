@@ -1,14 +1,14 @@
-import { Materia } from './types';
+import { Subject } from './types';
 
-const MATERIAS_KEY = 'materiasData';
+const SUBJECTS_KEY = 'subjectsData';
 
-export const guardarMaterias = (materias: Materia[]): void => {
+export const saveSubjects = (subjects: Subject[]): void => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(MATERIAS_KEY, JSON.stringify(materias));
+  localStorage.setItem(SUBJECTS_KEY, JSON.stringify(subjects));
 };
 
-export const obtenerMaterias = (): Materia[] => {
+export const getSubjects = (): Subject[] => {
   if (typeof window === 'undefined') return [];
-  const data = localStorage.getItem(MATERIAS_KEY);
+  const data = localStorage.getItem(SUBJECTS_KEY);
   return data ? JSON.parse(data) : [];
 };

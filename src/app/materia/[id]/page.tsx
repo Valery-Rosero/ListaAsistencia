@@ -1,8 +1,8 @@
 "use client";
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { obtenerMaterias, guardarMaterias } from '../../utils/storage';
-import { Materia } from '../../utils/types';
+import { getSubjects, saveSubjects } from '../../utils/storage';
+import { Subject } from '../../utils/types';
 import AddStudentModal from '../../components/AddStudentModal';
 import AttendanceTable from '../../components/AttendanceTable';
 import AttendanceHistory from '../../components/AttendanceHistory';
@@ -10,111 +10,111 @@ import Tabs from '../../components/Tabs';
 import { toast } from 'react-hot-toast';
 import StatsDashboard from './../../components/StatsDashboard';
 
-export default function MateriaPage() {
+export default function SubjectPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [materia, setMateria] = useState<Materia | null>(null);
-  const [activeTab, setActiveTab] = useState('Estudiantes');
+  const [subject, setSubject] = useState<Subject | null>(null);
+  const [activeTab, setActiveTab] = useState('Students');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Cargar materia al inicio
+  // Load subject on mount
   useEffect(() => {
-    const materias = obtenerMaterias();
-    const materiaEncontrada = materias.find((m) => m.id === id);
-    if (!materiaEncontrada) {
-      toast.error('Materia no encontrada');
+    const subjects = getSubjects();
+    const foundSubject = subjects.find((m) => m.id === id);
+    if (!foundSubject) {
+      toast.error('Subject not found');
       router.push('/');
     }
-    setMateria(materiaEncontrada || null);
+    setSubject(foundSubject || null);
   }, [id, router]);
 
-  // Función para añadir estudiante
-  const agregarEstudiante = (nombre: string) => {
-    if (!materia || !nombre.trim()) return;
+  // Function to add student
+  const addStudent = (name: string) => {
+    if (!subject || !name.trim()) return;
     
-    const nuevoEstudiante = {
+    const newStudent = {
       id: Date.now().toString(),
-      nombre: nombre.trim(),
+      name: name.trim(),
     };
 
     const updated = {
-      ...materia,
-      estudiantes: [...materia.estudiantes, nuevoEstudiante],
+      ...subject,
+      students: [...subject.students, newStudent],
     };
 
-    actualizarMateria(updated);
-    toast.success(`Estudiante ${nombre.trim()} añadido`);
+    updateSubject(updated);
+    toast.success(`Student ${name.trim()} added`);
   };
 
-  // Función para marcar/desmarcar asistencia
-  const toggleAsistencia = (estudianteId: string) => {
-    if (!materia) return;
+  // Function to toggle attendance
+  const toggleAttendance = (studentId: string) => {
+    if (!subject) return;
     
-    const hoy = new Date().toISOString().split('T')[0];
-    const updatedAsistencias = [...materia.asistencias];
-    const index = updatedAsistencias.findIndex(
-      (a) => a.estudianteId === estudianteId && a.fecha === hoy
+    const today = new Date().toISOString().split('T')[0];
+    const updatedAttendances = [...subject.attendances];
+    const index = updatedAttendances.findIndex(
+      (a) => a.studentId === studentId && a.date === today
     );
 
     if (index >= 0) {
-      updatedAsistencias[index].presente = !updatedAsistencias[index].presente;
+      updatedAttendances[index].present = !updatedAttendances[index].present;
     } else {
-      updatedAsistencias.push({
-        estudianteId,
-        fecha: hoy,
-        presente: true,
+      updatedAttendances.push({
+        studentId,
+        date: today,
+        present: true,
       });
     }
 
-    const updated = { ...materia, asistencias: updatedAsistencias };
-    actualizarMateria(updated);
+    const updated = { ...subject, attendances: updatedAttendances };
+    updateSubject(updated);
   };
 
-  // Función para guardar todas las asistencias
-  const guardarAsistencias = () => {
-    if (!materia) return;
+  // Function to save all attendances
+  const saveAttendances = () => {
+    if (!subject) return;
     
-    const hoy = new Date().toISOString().split('T')[0];
-    let cambios = false;
-    const updatedAsistencias = [...materia.asistencias];
+    const today = new Date().toISOString().split('T')[0];
+    let changes = false;
+    const updatedAttendances = [...subject.attendances];
 
-    materia.estudiantes.forEach(estudiante => {
-      const existe = updatedAsistencias.some(
-        a => a.estudianteId === estudiante.id && a.fecha === hoy
+    subject.students.forEach(student => {
+      const exists = updatedAttendances.some(
+        a => a.studentId === student.id && a.date === today
       );
       
-      if (!existe) {
-        updatedAsistencias.push({
-          estudianteId: estudiante.id,
-          fecha: hoy,
-          presente: false
+      if (!exists) {
+        updatedAttendances.push({
+          studentId: student.id,
+          date: today,
+          present: false
         });
-        cambios = true;
+        changes = true;
       }
     });
 
-    if (cambios) {
-      const updated = { ...materia, asistencias: updatedAsistencias };
-      actualizarMateria(updated);
-      toast.success('Asistencias guardadas correctamente');
+    if (changes) {
+      const updated = { ...subject, attendances: updatedAttendances };
+      updateSubject(updated);
+      toast.success('Attendances saved successfully');
     } else {
-      toast('No hay cambios para guardar', { icon: 'ℹ️' });
+      toast('No changes to save', { icon: 'ℹ️' });
     }
   };
 
-  // Actualizar materia en estado y localStorage
-  const actualizarMateria = (updated: Materia) => {
-    const materias = obtenerMaterias().map((m) => 
+  // Update subject in state and localStorage
+  const updateSubject = (updated: Subject) => {
+    const subjects = getSubjects().map((m) => 
       m.id === updated.id ? updated : m
     );
-    guardarMaterias(materias);
-    setMateria(updated);
+    saveSubjects(subjects);
+    setSubject(updated);
   };
 
-  if (!materia) {
+  if (!subject) {
     return (
       <div className="p-8 text-center">
-        <p>Cargando materia...</p>
+        <p>Loading subject...</p>
       </div>
     );
   }
@@ -125,45 +125,45 @@ export default function MateriaPage() {
         onClick={() => router.push('/')}
         className="flex items-center text-blue-600 hover:text-blue-800 mb-6 transition-colors dark:text-blue-400"
       >
-        ← Volver al menú
+        ← Back to menu
       </button>
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
-          {materia.nombre}
+          {subject.name}
         </h1>
         <button
           onClick={() => setIsModalOpen(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm"
         >
-          + Añadir Estudiante
+          + Add Student
         </button>
       </div>
 
-      <StatsDashboard materia={materia} />
+      <StatsDashboard subject={subject} />
 
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {activeTab === 'Estudiantes' && (
+      {activeTab === 'Students' && (
         <div className="bg-white rounded-xl shadow-sm p-6 dark:bg-gray-800">
           <AttendanceTable 
-            materia={materia} 
-            onToggleAttendance={toggleAsistencia} 
-            onSaveAttendance={guardarAsistencias}
+            subject={subject} 
+            onToggleAttendance={toggleAttendance} 
+            onSaveAttendance={saveAttendances}
           />
         </div>
       )}
 
-      {activeTab === 'Asistencias' && (
+      {activeTab === 'Attendance' && (
         <div className="bg-white rounded-xl shadow-sm p-6 dark:bg-gray-800">
-          <AttendanceHistory materia={materia} />
+          <AttendanceHistory subject={subject} />
         </div>
       )}
 
-      {activeTab === 'Reportes' && (
+      {activeTab === 'Reports' && (
         <div className="bg-white rounded-xl shadow-sm p-6 dark:bg-gray-800">
           <p className="text-gray-500 text-center py-12 dark:text-gray-400">
-            Próximamente: Gráficos y reportes detallados
+            Coming soon: Detailed charts and reports
           </p>
         </div>
       )}
@@ -171,7 +171,7 @@ export default function MateriaPage() {
       <AddStudentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAdd={agregarEstudiante}
+        onAdd={addStudent}
       />
     </div>
   );
